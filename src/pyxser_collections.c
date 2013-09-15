@@ -44,7 +44,7 @@ static const char Id[] = "$Id$";
 static xmlNodePtr pyxser_GlobalSequenceSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_GlobalTupleSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_GlobalListSerialization(PyxSerializationArgsPtr args);
-static xmlNodePtr pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args);
+static xmlNodePtr                   pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_RunSerializationCol(PyxSerializationArgsPtr args);
 
 /* Sets */
@@ -397,6 +397,7 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
         return (xmlNodePtr)NULL;
     }
 
+    /*
     for (counter = 0; counter < tupleSize; counter++) {
         currentKey = PyList_GetItem(dictKeys, counter);
         item = PyDict_GetItem(o, currentKey);
@@ -416,6 +417,7 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
         args->currentNode = currentNodeOld;
         args->rootNode = rootNodeOld;
     }
+    */
 
     nptr = pyxser_GetClassName(o);
     if (nptr != (char *)NULL) {
