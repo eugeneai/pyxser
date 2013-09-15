@@ -44,7 +44,7 @@ static const char Id[] = "$Id$";
 static xmlNodePtr pyxser_GlobalSequenceSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_GlobalTupleSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_GlobalListSerialization(PyxSerializationArgsPtr args);
-static xmlNodePtr                   pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args);
+static xmlNodePtr pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args);
 static xmlNodePtr pyxser_RunSerializationCol(PyxSerializationArgsPtr args);
 
 /* Sets */
@@ -378,10 +378,23 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
 	long tupleSize = 0;
 	long counter = 0, d = 0;
 	char *nptr = (char *)NULL;
-    //TRAP; // FIXME: Make the dict node, then serialize it as a list of 2-tuples.
+
+    PyObject * oList = (PyObject *) NULL;
+    xmlNodePtr * newListNode = (xmlNodePtr *) NULL;
+
 	if (PYTHON_IS_NONE(o)) {
 		return (xmlNodePtr)NULL;
 	}
+
+    tupleSize = PyDict_Size(o);
+    /*
+    dictKeys = PyDict_Keys(o);
+    if (PYTHON_IS_NONE(dictKeys)) {
+        PYXSER_FREE_OBJECT(className);
+        PYXSER_FREE_OBJECT(classPtr);
+        return (xmlNodePtr)NULL;
+    }
+    */
 
     newElementNode = xmlNewDocNode(docPtr, pyxser_GetDefaultNs(),
                                    BAD_CAST pyxser_xml_element_collection,
@@ -389,12 +402,12 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
     namePtr = xmlNewProp(newElementNode,
                          BAD_CAST pyxser_xml_attr_name,
                          BAD_CAST name);
-    tupleSize = PyDict_Size(o);
-    dictKeys = PyDict_Keys(o);
-    if (PYTHON_IS_NONE(dictKeys)) {
-        PYXSER_FREE_OBJECT(className);
-        PYXSER_FREE_OBJECT(classPtr);
-        return (xmlNodePtr)NULL;
+
+    nptr = pyxser_GetClassName(o);
+    if (nptr != (char *)NULL) {
+        typeAttr = xmlNewProp(newElementNode,
+                              BAD_CAST pyxser_xml_attr_type,
+                              BAD_CAST nptr);
     }
 
     /*
@@ -419,14 +432,26 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
     }
     */
 
-    nptr = pyxser_GetClassName(o);
-    if (nptr != (char *)NULL) {
-        typeAttr = xmlNewProp(newElementNode,
-                              BAD_CAST pyxser_xml_attr_type,
-                              BAD_CAST nptr);
+    if (tupleSize > 0) {
+            oList = PyDict_Items(o);
+
+            /*
+              PYXSER_FREE_OBJECT(dictKeys);
+            */
+
+            args->o = &oList;
+            args->item = &oList;
+            args->ck = (PyObject *) NULL;
+            // TRAP;
+            newListNode = pyxser_SerializeXml(args);
+            args->o = oold;
+            args->item = oold;
+            args->rootNode = rootNodeOld;
+
+            PYXSER_FREE_OBJECT(oList);
+            xmlAddChild(newElementNode, newListNode);
     }
 
-    PYXSER_FREE_OBJECT(dictKeys);
 	return newElementNode;
 }
 
