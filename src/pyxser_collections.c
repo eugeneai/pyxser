@@ -443,7 +443,7 @@ pyxser_GlobalDictSerialization(PyxSerializationArgsPtr args)
             args->item = &oList;
             args->ck = (PyObject *) NULL;
             // TRAP;
-            newListNode = pyxser_SerializeXml(args);
+            newListNode = pyxser_RunSerialization(args);
             args->o = oold;
             args->item = oold;
             args->rootNode = rootNodeOld;
